@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +42,19 @@ public class SailboatRestController {
         }
     }
 
+    @PutMapping("/y/{id}")
+    public ResponseEntity<?> updateSailboaty(@PathVariable int id, @RequestBody Sailboat sailboat) {
+        Optional<Sailboat> existingSailboat = sailboatRepository.findById(id);
+        if (existingSailboat.isPresent()) {
+            sailboat.setBoatID(id); // Ensure the ID from path is set
+            Sailboat updatedSailboat = sailboatRepository.save(sailboat);
+            return ResponseEntity.ok(updatedSailboat);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Sailboat with ID " + id + " not found.");
+        }
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Sailboat> updateSailboat(@PathVariable int id, @RequestBody Sailboat sailboat) {
         return sailboatRepository.findById(id)
@@ -51,7 +65,19 @@ public class SailboatRestController {
                 }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    
+    @PostMapping("/x/")
+    public ResponseEntity<Sailboat> createSailboatxx(@RequestBody Sailboat sailboat) {
+        sailboatRepository.save(sailboat);
+        return new ResponseEntity<>(sailboat, HttpStatus.OK);
+    }
+
+    @PostMapping("/")
+    public ResponseEntity<Sailboat> createSailboat(@RequestBody Sailboat sailboat) {
+        Sailboat savedSailboat = sailboatRepository.save(sailboat);
+        URI location = URI.create("/sailboats/" + savedSailboat.getBoatID());
+        return ResponseEntity.created(location).body(savedSailboat);
+    }
+
 
 
 }
